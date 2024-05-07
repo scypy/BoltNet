@@ -66,26 +66,17 @@ namespace BoltNET
                 SocketType.Dgram, ProtocolType.Udp);
 
             if (!SetupAndBind(_ipv4Socket, new IPEndPoint(addressIPv4, port))) return false;
-            try
-            {
-                int ipv4LocalPort = ((IPEndPoint)_ipv4Socket.LocalEndPoint).Port;
-            }
-            catch (Exception ex)
-            {
-                ex.LogException();
-            }
+            int ipv4LocalPort = ((IPEndPoint)_ipv4Socket.LocalEndPoint).Port;
 
             if (!ipv6Dual || !SupportsIPv6)
             {
                 return true;
             }
-
-            //if using ipv6
-            //_ipv6Socket = new Socket(AddressFamily.InterNetworkV6,
-              //  SocketType.Dgram, ProtocolType.Udp);
+            _ipv6Socket = new Socket(AddressFamily.InterNetworkV6,
+                SocketType.Dgram, ProtocolType.Udp);
 
 
-            //SetupAndBind(_ipv6Socket, new IPEndPoint(addressIPv6, ipv4LocalPort));
+            SetupAndBind(_ipv6Socket, new IPEndPoint(addressIPv6, ipv4LocalPort));
             return true;
         }
 
@@ -200,39 +191,6 @@ namespace BoltNET
         {
             await _ipv4Socket.ConnectAsync(target);
             return _ipv4Socket.Connected;
-            //if (!IsRunning)
-            //    throw new InvalidOperationException("Not Running");
-
-            //lock (_requestsDict)
-            //{
-            //    if (_requestsDict.ContainsKey(target))
-            //        return null;
-            //}
-
-            //byte connectionNumber = 0;
-            //_peersLock.EnterUpgradeableReadLock();
-            //if (_peersDict.TryGetValue(target, out var peer))
-            //{
-            //    switch (peer.ConnectionState)
-            //    {
-            //        //just return already connected peer
-            //        case ConnectionState.Connected:
-            //        case ConnectionState.Outgoing:
-            //            _peersLock.ExitUpgradeableReadLock();
-            //            return peer;
-            //    }
-            //    //else reconnect
-            //    connectionNumber = (byte)((peer.ConnectionNum + 1) % NetConstants.MaxConnectionNumber);
-            //    RemovePeer(peer);
-            //}
-
-            ////Create reliable connection
-            ////And send connection request
-            //peer = new Client(GetNextClientId(), target, this, connectionNumber, data);
-            //AddPeer(peer);
-            //_peersLock.ExitUpgradeableReadLock();
-
-            //return peer;
         }
 
         private uint GetNextClientId()
