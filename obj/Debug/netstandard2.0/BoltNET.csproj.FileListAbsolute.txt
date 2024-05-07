@@ -1,0 +1,11 @@
+C:\Users\Q.M\source\repos\BoltNET\obj\Debug\netstandard2.0\BoltNET.csproj.AssemblyReference.cache
+C:\Users\Q.M\source\repos\BoltNET\obj\Debug\netstandard2.0\BoltNET.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Q.M\source\repos\BoltNET\obj\Debug\netstandard2.0\BoltNET.AssemblyInfoInputs.cache
+C:\Users\Q.M\source\repos\BoltNET\obj\Debug\netstandard2.0\BoltNET.AssemblyInfo.cs
+C:\Users\Q.M\source\repos\BoltNET\obj\Debug\netstandard2.0\BoltNET.csproj.CoreCompileInputs.cache
+C:\Users\Q.M\source\repos\BoltNET\obj\Debug\netstandard2.0\BoltNET.sourcelink.json
+C:\Users\Q.M\source\repos\BoltNET\bin\Debug\netstandard2.0\BoltNET.deps.json
+C:\Users\Q.M\source\repos\BoltNET\bin\Debug\netstandard2.0\BoltNET.dll
+C:\Users\Q.M\source\repos\BoltNET\bin\Debug\netstandard2.0\BoltNET.pdb
+C:\Users\Q.M\source\repos\BoltNET\obj\Debug\netstandard2.0\BoltNET.dll
+C:\Users\Q.M\source\repos\BoltNET\obj\Debug\netstandard2.0\BoltNET.pdb

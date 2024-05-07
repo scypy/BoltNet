@@ -7,17 +7,14 @@ using BoltNET.Utils;
 using System;
 using System.Threading;
 using System.Collections.Generic;
+using BoltNET.BoltNET.Messages;
+using System.Threading.Tasks;
 
 
 
 namespace BoltNET
 {
 
-
-    public class ConnectionRequest
-    {
-        //move to messages
-    }
     public sealed class BoltSocket
     {
         private Socket _ipv4Socket;
@@ -43,11 +40,13 @@ namespace BoltNET
         public bool Start()
         {
             if (IsRunning) return false;
+            AppDomain.CurrentDomain.UnhandledException += HandleException;
             _ipv4Socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             _ipv4Socket.DontFragment = true;
             _ipv4Socket.Blocking = false;
             bool bindSocket = Bind(ConnectionInformation.IPV4Address,
                 ConnectionInformation.IPV4Address, ConnectionInformation.Port, ConnectionInformation.UseIPv6Dual);
+            IsRunning = true;
             _logicThread = new Thread(ReceiveLogic);
             _logicThread.Start();
 
@@ -56,14 +55,25 @@ namespace BoltNET
             return bindSocket;
         }
 
+        private void HandleException(object sender, UnhandledExceptionEventArgs e)
+        {
+            ((Exception)e.ExceptionObject).LogException();
+        }
+
         private bool Bind(IPAddress addressIPv4, IPAddress addressIPv6, int port, bool ipv6Dual)
         {
             _ipv4Socket = new Socket(AddressFamily.InterNetwork,
                 SocketType.Dgram, ProtocolType.Udp);
 
             if (!SetupAndBind(_ipv4Socket, new IPEndPoint(addressIPv4, port))) return false;
-
-            int ipv4LocalPort = ((IPEndPoint)_ipv4Socket.LocalEndPoint).Port;
+            try
+            {
+                int ipv4LocalPort = ((IPEndPoint)_ipv4Socket.LocalEndPoint).Port;
+            }
+            catch (Exception ex)
+            {
+                ex.LogException();
+            }
 
             if (!ipv6Dual || !SupportsIPv6)
             {
@@ -71,11 +81,11 @@ namespace BoltNET
             }
 
             //if using ipv6
-            _ipv6Socket = new Socket(AddressFamily.InterNetworkV6,
-                SocketType.Dgram, ProtocolType.Udp);
+            //_ipv6Socket = new Socket(AddressFamily.InterNetworkV6,
+              //  SocketType.Dgram, ProtocolType.Udp);
 
 
-            SetupAndBind(_ipv6Socket, new IPEndPoint(addressIPv6, ipv4LocalPort));
+            //SetupAndBind(_ipv6Socket, new IPEndPoint(addressIPv6, ipv4LocalPort));
             return true;
         }
 
@@ -186,9 +196,10 @@ namespace BoltNET
             return true;
         }
 
-        public bool Connect(IPEndPoint target, NetWriter data)
+        public async Task<bool> Connect(IPEndPoint target)
         {
-            return false;
+            await _ipv4Socket.ConnectAsync(target);
+            return _ipv4Socket.Connected;
             //if (!IsRunning)
             //    throw new InvalidOperationException("Not Running");
 
@@ -233,13 +244,37 @@ namespace BoltNET
         {
             var packet = new Message(BoltGlobals.ReceiveBufferSize);
             packet.Size = s.ReceiveFrom(packet.Data, 0, BoltGlobals.ReceiveBufferSize, SocketFlags.None, ref bufferEndPoint);
+            $"Receiving...".Log();
             OnMessageReceived(packet, (IPEndPoint)bufferEndPoint);
         }
 
         private void OnMessageReceived(Message packet, IPEndPoint bufferEndPoint)
         {
-
-            $"Received Packet".Log();
+            packet.ReadHeader(packet.Data[0], out MessageType type);
+            switch (type)
+            {
+                case MessageType.Unreliable:
+                    $"Received Unreliable {type}".Log();
+                    break;
+                case MessageType.Channeled:
+                    break;
+                case MessageType.Ack:
+                    break;
+                case MessageType.Disconnect:
+                    break;
+                case MessageType.Ping:
+                    break;
+                case MessageType.Pong:
+                    break;
+                case MessageType.ConnectRequest:
+                    break;
+                case MessageType.ConnectAccept:
+                    break;
+                case MessageType.Unknown:
+                    break;
+                default:
+                    break;
+            }
         }
 
         private void ReceiveLogic()
@@ -249,10 +284,8 @@ namespace BoltNET
             var selectReadList = new List<Socket>(2);
             var socketv4 = _ipv4Socket;
             var socketV6 = _ipv6Socket;
-
             while (IsRunning)
             {
-                //Reading data
                 try
                 {
                     if (socketV6 == null)
@@ -300,6 +333,15 @@ namespace BoltNET
                     return;
                 }
             }
+        }
+        public bool SendUnreliable(Message message, IPEndPoint endpoint)
+        {
+            if (message.Size > BoltGlobals.SendBufferSize)
+            {
+            $"Packet Size Exceeds Send Limit!".Log(); return false;
+            }
+            message.WriteHeader(MessageType.Unreliable);
+            return _ipv4Socket.SendTo(message.Data, message.Offset, message.Size, SocketFlags.None, endpoint) > 0;
         }
     }
 }

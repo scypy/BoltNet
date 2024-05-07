@@ -5,6 +5,10 @@ VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BoltNET", "BoltNET.csproj", "{C6383ED5-2D6B-4E05-86FD-362EF2FA8344}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BoltNET.TestServer", "..\BoltNET.Test\BoltNET.TestServer.csproj", "{A1B4EB45-0A37-4F64-9896-EB3050ADC92E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoltNET.TestClient", "..\BoltNET.TestClient\BoltNET.TestClient.csproj", "{4DC7DF9C-CF9F-4039-BBB5-A5F0543284CB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{C6383ED5-2D6B-4E05-86FD-362EF2FA8344}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C6383ED5-2D6B-4E05-86FD-362EF2FA8344}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C6383ED5-2D6B-4E05-86FD-362EF2FA8344}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1B4EB45-0A37-4F64-9896-EB3050ADC92E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B4EB45-0A37-4F64-9896-EB3050ADC92E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1B4EB45-0A37-4F64-9896-EB3050ADC92E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1B4EB45-0A37-4F64-9896-EB3050ADC92E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DC7DF9C-CF9F-4039-BBB5-A5F0543284CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DC7DF9C-CF9F-4039-BBB5-A5F0543284CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DC7DF9C-CF9F-4039-BBB5-A5F0543284CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DC7DF9C-CF9F-4039-BBB5-A5F0543284CB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

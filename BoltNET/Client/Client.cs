@@ -51,7 +51,7 @@ namespace BoltNET.Clients
 
         public bool SendChanneled(Message msg, byte channelId)
         {
-
+            return false;
         }
 
         private int SetMTU()

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BoltNET")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4ed53014325921044c35645134353db14f1358e8")]
 [assembly: System.Reflection.AssemblyProductAttribute("BoltNET")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BoltNET")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

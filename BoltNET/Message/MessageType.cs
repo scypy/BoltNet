@@ -22,6 +22,5 @@ namespace BoltNET.Messages
         UnreliableOrdered = 1,
         Reliable = 2,
         ReliableOrdered = 3
-
     }
 }

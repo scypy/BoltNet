@@ -5,16 +5,20 @@ using System.Text;
 
 namespace BoltNET.Messages
 {
-    public class ConnectionRequest : ISerializableMessage<ConnectionRequest>
+    public struct ConnectionRequest : ISerializableMessage<ConnectionRequest>
     {
+        public byte Key;
         public ConnectionRequest DeSerialize(Message message)
         {
+            message.ReadByte();
             return this;
         }
         // TODO: Connect with key
         public Message Serialize()
         {
-            return new Message(-1);
+            Message msg = new Message(0);
+            msg.Write(Key);
+            return msg;
         }
     }
 }

@@ -1,3 +1,4 @@
+using BoltNET.Globals;
 using System;
 using System.Net.NetworkInformation;
 using System.Net.WebSockets;
@@ -19,19 +20,28 @@ namespace BoltNET.Messages
         private byte[] _data;
         private int _position;
         private int _offset;
+        public int Position { get => _position; }
+        public int Offset { get => _offset; }
         public byte[] Data { get => _data; }
         public int Size { get; set; }
         //Header
         public MessageType Property { get; set; }
-        public ushort OpCode { get; set; }
+        public ushort OpCode { get; private set; }
         public const int StringBufferMaxLength = 65535;
         public bool IsFragmented { get; set; }
 
         #region Constructors
-        public Message(int size)
+        public Message(ushort opcode)
         {
-            this.Size = size;
-            this._data = new byte[size];
+            OpCode = opcode;
+            Write(OpCode);
+            this.Size = BoltGlobals.SendBufferSize;
+            this._data = new byte[BoltGlobals.SendBufferSize];
+        }
+        public Message()
+        {
+            this.Size = BoltGlobals.SendBufferSize;
+            this._data = new byte[BoltGlobals.SendBufferSize];
         }
         public Message(MessageType property, int size)
         {
@@ -76,7 +86,7 @@ namespace BoltNET.Messages
         {
             return $"Type: {Property}, Size: {Size}";
         }
-
+        #region Writes
         public void Write(byte value)
         {
             EnsureCapacity(sizeof(byte));
@@ -164,6 +174,22 @@ namespace BoltNET.Messages
            Write(checked(length));
            Write(data);
         }
+        #endregion
+
+        #region Reads
+        public byte ReadByte()
+        {
+            byte result = _data[_position];
+            _position++;
+            return result;
+        }
+        public ushort ReadUShort()
+        {
+            ushort result = BitConverter.ToUInt16(_data, _position);
+            _position += 2;
+            return result;
+        }
+        #endregion
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void EnsureCapacity(int additionalBytes)
