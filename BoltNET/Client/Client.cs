@@ -23,8 +23,8 @@ namespace BoltNET.Clients
 
         internal volatile Client NextClient;
         internal volatile Client PrevClient;
-
-        public BoltSocket Socket { get; private set; }
+        private BoltSocket _socket;
+        public BoltSocket Socket { get => _socket; }
         public int MTU { get; private set; }
         public int RTT { get; private set; }
 
@@ -45,7 +45,7 @@ namespace BoltNET.Clients
         {
             this.ID = id;
             this.EndPoint = endPoint;
-            this.Socket = socket;
+            this._socket = socket;
             MTU = SetMTU();
         }
 
@@ -67,6 +67,13 @@ namespace BoltNET.Clients
                 mtu = ipv4Properties.Mtu;
             }
             return mtu <= BoltGlobals.MINIMUM_MTU ? BoltGlobals.MINIMUM_MTU : mtu;
+        }
+
+        public bool Disconnect()
+        {
+            if (this.State != ClientState.Disconnected)
+                return _socket.DisconnectClient(this, EndPoint);
+            else return false;
         }
     }
 }

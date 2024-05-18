@@ -30,8 +30,11 @@ namespace BoltNET
 
         private uint _clientIdPool;
 
-        private readonly Dictionary<IPEndPoint, Client> _peersDict = new Dictionary<IPEndPoint, Client>();
-        private readonly Dictionary<IPEndPoint, ConnectionRequest> _requestsDict = new Dictionary<IPEndPoint, ConnectionRequest>();
+        private readonly Dictionary<IPEndPoint, Client> _clientDict = new Dictionary<IPEndPoint, Client>();
+        private readonly Dictionary<uint, Client> _clientIDsDict = new Dictionary<uint, Client>();
+
+
+        private readonly Dictionary<IPEndPoint, ConnectionRequest> _incomingRequests = new Dictionary<IPEndPoint, ConnectionRequest>();
 
         public BoltSocket(ConnectionInformation connectionInformation)
         {
@@ -41,11 +44,13 @@ namespace BoltNET
         {
             if (IsRunning) return false;
             AppDomain.CurrentDomain.UnhandledException += HandleException;
+
             _ipv4Socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             _ipv4Socket.DontFragment = true;
             _ipv4Socket.Blocking = false;
             bool bindSocket = Bind(ConnectionInformation.IPV4Address,
                 ConnectionInformation.IPV4Address, ConnectionInformation.Port, ConnectionInformation.UseIPv6Dual);
+
             IsRunning = true;
             _logicThread = new Thread(ReceiveLogic);
             _logicThread.Start();
@@ -134,8 +139,7 @@ namespace BoltNET
             }
             catch (Exception e)
             {
-                // Ignore error when SIO_UDP_CONNRESET is not supported
-                Console.WriteLine(e.Message);
+                $"Socket IOControl could not be set".Log();
             }
 
             try
@@ -144,19 +148,17 @@ namespace BoltNET
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                $"Socket TTL could not be set! {e}".Log();
             }
 
             try
             {
-                // Bind the socket to the OS
                 socket.Bind(endpoint);
             }
             catch (SocketException bindException)
             {
                 switch (bindException.SocketErrorCode)
                 {
-                    // IPv6 bind fix
                     case SocketError.AddressAlreadyInUse:
                         {
                             if (socket.AddressFamily == AddressFamily.InterNetworkV6)
@@ -168,7 +170,7 @@ namespace BoltNET
                                 }
                                 catch (SocketException e)
                                 {
-                                    Console.WriteLine("Socket bind failed after setting dual mode with exception: " + e);
+                                    $"Socket bind failed after setting dual mode with exception:{e}".Log();
                                     return false;
                                 }
 
@@ -198,15 +200,15 @@ namespace BoltNET
             return _clientIdPool++;
         }
 
-        private void ReceiveFrom(Socket s, ref EndPoint bufferEndPoint)
+        private void ReceiveFrom(Socket s, ref EndPoint endPoint)
         {
             var packet = new Message(BoltGlobals.ReceiveBufferSize);
-            packet.Size = s.ReceiveFrom(packet.Data, 0, BoltGlobals.ReceiveBufferSize, SocketFlags.None, ref bufferEndPoint);
+            packet.Size = s.ReceiveFrom(packet.Data, 0, BoltGlobals.ReceiveBufferSize, SocketFlags.None, ref endPoint);
             $"Receiving...".Log();
-            OnMessageReceived(packet, (IPEndPoint)bufferEndPoint);
+            OnMessageReceived(packet, (IPEndPoint)endPoint);
         }
 
-        private void OnMessageReceived(Message packet, IPEndPoint bufferEndPoint)
+        private void OnMessageReceived(Message packet, IPEndPoint endPoint)
         {
             packet.ReadHeader(packet.Data[0], out MessageType type);
             switch (type)
@@ -225,6 +227,10 @@ namespace BoltNET
                 case MessageType.Pong:
                     break;
                 case MessageType.ConnectRequest:
+                    Client client = new Client(GetNextClientId(), endPoint, this);
+                    bool dictAdd = _clientDict.TryAdd(endPoint, client);
+                    bool idAdd = _clientIDsDict.TryAdd(client.ID, client);
+                    if (dictAdd == false || idAdd == false) client.Disconnect();
                     break;
                 case MessageType.ConnectAccept:
                     break;
@@ -296,10 +302,18 @@ namespace BoltNET
         {
             if (message.Size > BoltGlobals.SendBufferSize)
             {
-            $"Packet Size Exceeds Send Limit!".Log(); return false;
+                $"Packet Size Exceeds Send Limit!".Log(); return false;
             }
             message.WriteHeader(MessageType.Unreliable);
             return _ipv4Socket.SendTo(message.Data, message.Offset, message.Size, SocketFlags.None, endpoint) > 0;
+        }
+
+        public bool DisconnectClient(Client client, IPEndPoint endpoint)
+        {
+            client.State = ClientState.Disconnected;
+            Message msg = new Message(MessageType.Disconnect);
+            bool success = SendUnreliable(msg, endpoint);
+            return success;
         }
     }
 }

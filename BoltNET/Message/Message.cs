@@ -49,6 +49,12 @@ namespace BoltNET.Messages
             this.Size = size;
             this._data = new byte[size];
         }
+        public Message(MessageType property)
+        {
+            this.Property = property;
+            this.Size = BoltGlobals.SendBufferSize;
+            this._data = new byte[Size];
+        }
         public Message(byte[] data, int offset, int size)
         {
             this._data = data;
